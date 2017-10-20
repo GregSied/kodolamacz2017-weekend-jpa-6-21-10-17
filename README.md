@@ -1,3 +1,108 @@
+Analiza statyczna - checkstyle
+---
+Pomaga utrzymać spójność stylu w kodzie. <br>
+
+Konfiguracja w pliku *checkstyle.xml* <br>
+
+Wzorcowe konfiguracje: <br>
+sun style: https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/sun_checks.xml <br>
+google style: https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml <br>
+
+Plugin CheckStyle-IDEA <br>
+
+```xml
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>2.17</version>
+        <dependencies>
+          <dependency>
+            <groupId>com.puppycrawl.tools</groupId>
+            <artifactId>checkstyle</artifactId>
+            <version>8.2</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <configLocation>checkstyle.xml</configLocation>
+          <encoding>UTF-8</encoding>
+          <consoleOutput>true</consoleOutput>
+          <failsOnError>true</failsOnError>
+        </configuration>
+        <executions>
+          <execution>
+            <id>checkstyle</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+```
+
+Analiza statyczna - Sonar
+---
+Kompleksowa analiza statyczna i raportowanie. <br>
+
+Obraz dockerowy: https://hub.docker.com/_/sonarqube <br>
+
+Start sonara: <br>
+`docker run -d --name sonarqube -p 9000:9000 -p 9092:9092 sonarqube:6.5`
+
+Odpalenie sonara: <br>
+`mvn verify` <br>
+`mvn verify -Dsonar.host.url=http://192.168.2.168:9000` <br>
+
+```xml
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
+        <version>3.3.0.603</version>
+        <executions>
+          <execution>
+            <id>sonar</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sonar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+```
+
+Analiza statyczna - JaCoCo
+---
+Liczy pokrycie kodu testami. <br>
+
+---
+```xml
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.7.9</version>
+        <executions>
+          <execution>
+            <id>prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+```
+
 Instalacja docker
 ---
 Ubuntu <br>
@@ -47,6 +152,9 @@ Teraz połączenie do postgresa się nie uda. <br>
 
 **Usunięcie wystartowanego lub zatrzymanego kontenera** <br>
 `docker rm -f test-postgres` <br>
+
+**Wyświetlenie pobranych obrazów** <br>
+`docker images` <br>
 
 **Usunięcie obrazu** <br>
 `docker rmi postgres:9.6` <br>
@@ -106,3 +214,42 @@ services:
       networks:
         - backend
 ```
+
+**Wystartowanie konfiguracji** <br>
+`docker-compose up -d` <br>
+
+**Zatrzymanie konfiguracji** <br>
+`docker-compose stop` <br>
+
+Definiowanie obrazów docker
+---
+Obrazy definiuje się w pliku *Dockerfile*. <br>
+Dokumentacja *Dockerfile*: https://docs.docker.com/engine/reference/builder <br>
+
+*Dockerfile*
+```dockerfile
+FROM java:8-jre-alpine
+
+COPY test-app.jar /test-app/test-app.jar
+
+ENTRYPOINT java -jar /test-app/test-app.jar
+```
+
+**Zbudowanie obrazu** <br>
+`docker build -t test-app:1.0 .` <br>
+
+**Pro Tip - budowanie wykonywalnego jar** <br>
+https://stackoverflow.com/a/574650 <br>
+`mvn clean compile assembly:single` <br>
+
+Zadanie 1
+------
+Napisz aplikację, która wrzuca co sekundę do bazy jakiś: <br>
+Shop
+* name
+* address
+
+Utwórz obraz twojej aplikacji (Dockerfile). <br>
+
+Utwórz docker compose z postgresem i twoją aplikacją (docker-compose.yml). <br>
+Wystaw port postgresa na zewnątrz (5432), żeby obejrzeć zmiany w bazie. <br>
